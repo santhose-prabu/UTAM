@@ -15,7 +15,7 @@ import utam.core.selenium.factory.WebDriverFactory;
 import java.time.Duration;
 
 public class UtamTestBase {
-    private WebDriver driver;
+    protected WebDriver driver;
     protected UtamLoader loader;
 
     static String getUserHomeRelativePath(String fileName) {

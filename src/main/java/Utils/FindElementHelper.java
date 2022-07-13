@@ -1,5 +1,6 @@
 package Utils;
 
+import org.openqa.selenium.WebDriver;
 import utam.core.framework.consumer.UtamLoader;
 import utam.flexipage.pageobjects.Component2;
 import utam.flexipage.pageobjects.Tab2;
@@ -20,10 +21,15 @@ import java.util.List;
 
 public class FindElementHelper {
     private final UtamLoader loader;
+    private final WebDriver driver;
     public List<RecordLayoutItem> items;
+    public RecordActionWrapper recordFormModal;
+    public BaseRecordForm recordForm;
+    public LwcRecordLayout recordLayout;
 
-    public FindElementHelper(UtamLoader Loader) {
+    public FindElementHelper(UtamLoader Loader, WebDriver Driver) {
         this.loader = Loader;
+        this.driver = Driver;
     }
 
     public void NavigateTo(String tab, String ApiName) {
@@ -39,7 +45,7 @@ public class FindElementHelper {
     public void OpenApp(String AppName) {
         DesktopLayoutContainer dlc = loader.load(DesktopLayoutContainer.class);
         AppNav appNav = dlc.getAppNav();
-        if(!(appNav.getAppName().getText()).equalsIgnoreCase(AppName)) {
+        if (!(appNav.getAppName().getText()).equalsIgnoreCase(AppName)) {
             appNav.getAppLauncherHeader().getButton().click();
             AppLauncherMenu appLauncherMenu = loader.load(AppLauncherMenu.class);
             appLauncherMenu.getSearchBar().getLwcInput().setText(AppName);
@@ -69,38 +75,53 @@ public class FindElementHelper {
 
     }
 
-    public LwcRecordLayout GetRecordLayout(){
-        RecordActionWrapper recordFormModal = loader.load(RecordActionWrapper.class);
-        BaseRecordForm recordForm = recordFormModal.getRecordForm();
-        return recordForm.getRecordLayout();
+    public LwcRecordLayout GetRecordLayout() {
+        recordFormModal = loader.load(RecordActionWrapper.class);
+        recordForm = recordFormModal.getRecordForm();
+        recordLayout = recordForm.getRecordLayout();
+        return recordLayout;
     }
 
-    public void GetLayoutItems(LwcRecordLayout recordLayout){
-                items=recordLayout.getAllItems();
+    public void GetLayoutItems() {
+        items = recordLayout.getAllItems();
     }
 
-    public RecordLayoutItem GetElement(String Label){
+    public RecordLayoutItem GetElement(String Label) {
         return items.stream().filter((ri) -> ri.getRoot().getText().contains(Label)).findFirst().get();
     }
 
-    public void SelectItemFromList(ConsoleObjectHome objectHome,String item){
+    public void SelectItemFromList(ConsoleObjectHome objectHome, String item) {
         ListViewManagerPrimaryDisplayManager grid = objectHome.getListView().getListViewContainer(ListViewManagerPrimaryDisplayManager.class);
         grid.getRecordLayout().getRecordLink(item).click();
     }
 
-    public void OpenRelatedList(RecordHomeFlexipage2 recordhome){
-        TabBar.TabByLabelElement Related=recordhome.getRecordHomeTemplateDesktop2().getTabset2().getTabset().getTabBar().getTabByLabel("Related");
+    public void OpenRelatedList(RecordHomeFlexipage2 recordhome) {
+        TabBar.TabByLabelElement Related = recordhome.getRecordHomeTemplateDesktop2().getTabset2().getTabset().getTabBar().getTabByLabel("Related");
         Related.click();
     }
 
-    public void GetDetails(RecordHomeFlexipage2 recordhome){
+    public void GetDetails(RecordHomeFlexipage2 recordhome) {
 
         LwcDetailPanel detailPanel = recordhome.getTabset().getActiveTabContent(Tab2.class).getDetailPanel();
-        items=detailPanel.getBaseRecordForm().getRecordLayout().getAllItems();
+        items = detailPanel.getBaseRecordForm().getRecordLayout().getAllItems();
     }
 
-    public RecordLayoutItem GetItemText(String Label){
+    public RecordLayoutItem GetItemText(String Label) {
         return items.stream().filter((ri) -> ri.getLabel().getText().contains(Label)).findFirst().get();
+    }
+
+    public void GetDetailsTab(RecordHomeFlexipage2 recordhome) {
+        Tabset tabset = recordhome.getTabset();
+        TabBar tabBar = tabset.getTabBar();
+        String activeTabName = tabBar.getActiveTabText();
+        if (!"Details".equalsIgnoreCase(activeTabName)) {
+            tabBar.clickTab("Details");
+        }
+    }
+
+    public void SelectListView(String listViewName) {
+        String List = driver.getCurrentUrl().replace("Recent", listViewName);
+        driver.get(List);
     }
 
 }
